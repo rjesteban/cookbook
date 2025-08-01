@@ -4,9 +4,11 @@ import app.recipe.cookbook.recipe.dto.domain.RecipeDto;
 import app.recipe.cookbook.recipe.dto.request.RecipeSearchCriteria;
 import app.recipe.cookbook.recipe.dto.request.SaveRecipeRequestDto;
 import app.recipe.cookbook.recipe.dto.response.ApiResponse;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,12 +22,12 @@ public class RecipeController {
 
     private final RecipeService recipeService;
 
-
     @PostMapping
-    public void createRecipe(@RequestBody SaveRecipeRequestDto saveRecipeRequestDto) {
-
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<RecipeDto> createRecipe(@Valid @RequestBody SaveRecipeRequestDto saveRecipeRequestDto) {
+        final RecipeDto createdRecipe = recipeService.createRecipe(saveRecipeRequestDto);
+        return ApiResponse.success(createdRecipe);
     }
-
 
     @GetMapping
     public ApiResponse<List<RecipeDto>> getRecipes(
@@ -62,13 +64,15 @@ public class RecipeController {
     }
 
     @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateRecipe(
             @PathVariable UUID id,
             @RequestBody SaveRecipeRequestDto requestDto) {
-
+        recipeService.updateRecipe(id, requestDto);
     }
 
     @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteRecipe(@PathVariable UUID id) {
         recipeService.deleteRecipe(id);
     }

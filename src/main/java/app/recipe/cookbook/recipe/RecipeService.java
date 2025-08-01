@@ -1,8 +1,11 @@
 package app.recipe.cookbook.recipe;
 
+import app.recipe.cookbook.recipe.db.entity.Ingredient;
+import app.recipe.cookbook.recipe.db.repository.IngredientRepository;
 import app.recipe.cookbook.recipe.dto.domain.RecipeDto;
 import app.recipe.cookbook.recipe.db.entity.Recipe;
 import app.recipe.cookbook.recipe.dto.request.RecipeSearchCriteria;
+import app.recipe.cookbook.recipe.dto.request.SaveRecipeRequestDto;
 import app.recipe.cookbook.recipe.exception.RecipeNotFoundException;
 import app.recipe.cookbook.recipe.mappers.RecipeMapper;
 import app.recipe.cookbook.recipe.db.repository.RecipeRepository;
@@ -22,6 +25,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class RecipeService {
 
+    private final IngredientRepository ingredientRepository;
     private final RecipeRepository recipeRepository;
     private final RecipeMapper recipeMapper;
 
@@ -108,5 +112,71 @@ public class RecipeService {
         }
         recipeRepository.deleteById(id);
         log.info("Successfully deleted recipe with ID: {}", id);
+    }
+
+    @Transactional
+    public RecipeDto createRecipe(SaveRecipeRequestDto requestDto) {
+        log.info("Creating new recipe with title: {}", requestDto.getTitle());
+
+        final List<Ingredient> processedIngredients = upsertIngredients(requestDto.getIngredients());
+        final Recipe recipe = recipeMapper.fromCreateRequestDto(requestDto, processedIngredients);
+        final UUID recipeId = recipe.getId() != null ? recipe.getId() : UUID.randomUUID();
+        recipe.setId(recipeId);
+
+        // Update all ingredients and instructions with the correct recipe ID
+        recipe.getIngredients().forEach(ingredient -> ingredient.setRecipeId(recipeId));
+        recipe.getInstructions().forEach(instruction -> instruction.setRecipeId(recipeId));
+
+        // Save the updated recipe: cascade will handle ingredients and instructions
+        final Recipe savedRecipe = recipeRepository.save(recipe);
+
+        log.info("Successfully created recipe with ID: {}", savedRecipe.getId());
+        return recipeMapper.toDto(savedRecipe);
+    }
+
+    @Transactional
+    public void updateRecipe(UUID id, SaveRecipeRequestDto requestDto) {
+        log.info("Updating recipe with ID: {}", id);
+
+        if (!recipeRepository.existsById(id)) {
+            throw new RecipeNotFoundException("Recipe not found with ID: " + id);
+        }
+
+        final List<Ingredient> processedIngredients = upsertIngredients(requestDto.getIngredients());
+        final Recipe recipe = recipeMapper.fromUpdateRequestDto(requestDto, id, processedIngredients);
+
+        // Update all ingredients and instructions with the correct recipe ID
+        recipe.getIngredients().forEach(ingredient -> ingredient.setRecipeId(id));
+        recipe.getInstructions().forEach(instruction -> instruction.setRecipeId(id));
+
+        // Save the updated recipe: cascade will handle ingredients and instructions
+        final Recipe savedRecipe = recipeRepository.save(recipe);
+
+        log.info("Successfully updated recipe with ID: {}", savedRecipe.getId());
+    }
+
+    /**
+     * Business logic: Process ingredients by finding existing ones or creating new ones
+     */
+    private List<Ingredient> upsertIngredients(List<SaveRecipeRequestDto.IngredientRequestDto> ingredientDtos) {
+        // N + 1 problem, although there are a few steps so no need to further optimize for now.
+        return ingredientDtos.stream()
+                .map(this::upsertIngredient)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Business logic Find existing ingredient by name or create a new one
+     */
+    private Ingredient upsertIngredient(SaveRecipeRequestDto.IngredientRequestDto dto) {
+        return ingredientRepository.findByNameIgnoreCase(dto.getName())
+                .orElseGet(() -> {
+                    log.debug("Creating new ingredient: {}", dto.getName());
+                    Ingredient newIngredient = Ingredient.builder()
+                            .name(dto.getName())
+                            .isVegetarian(dto.getIsVegetarian())
+                            .build();
+                    return ingredientRepository.save(newIngredient);
+                });
     }
 }

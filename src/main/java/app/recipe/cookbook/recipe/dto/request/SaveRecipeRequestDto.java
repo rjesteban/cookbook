@@ -13,6 +13,10 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * Request body to be used when saving (create, update) a recipe.
+ * This will collectively save other relating entities (instruction, ingredient) as well.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -68,10 +72,6 @@ public class SaveRecipeRequestDto {
     @AllArgsConstructor
     @Builder
     public static class InstructionRequestDto {
-        @NotNull(message = "Step number is required")
-        @Positive(message = "Step number must be positive")
-        private Short stepNumber;
-
         @NotBlank(message = "Instruction content is required")
         private String content;
     }

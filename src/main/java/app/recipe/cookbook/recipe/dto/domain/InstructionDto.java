@@ -16,7 +16,7 @@ public class InstructionDto {
     private UUID id;
     private UUID recipeId;
 
-    private Short stepNumber;
+    private Integer stepNumber;
     private String content;
 
 }
