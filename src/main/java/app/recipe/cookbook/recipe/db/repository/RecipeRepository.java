@@ -13,17 +13,26 @@ import java.util.UUID;
 public interface RecipeRepository extends JpaRepository<Recipe, UUID> {
 
     /**
-     * Advanced search with multiple optional filters
-     * TODO: Update query
+     * Advanced search with multiple optional filters.
+     * Other complex filters will be done in application side (after these records are retrieved).
      */
-    @Query("TODO: UPDATE QUERY")
+    @Query("""
+        SELECT DISTINCT r FROM Recipe r
+        LEFT JOIN FETCH r.ingredients ri
+        LEFT JOIN FETCH ri.ingredient
+        LEFT JOIN r.instructions inst
+        WHERE
+            (:isVegetarian IS NULL OR r.isVegetarian = :isVegetarian)
+            AND (:servings IS NULL OR r.servings = :servings)
+            AND (:minServings IS NULL OR r.servings >= :minServings)
+            AND (:maxServings IS NULL OR r.servings <= :maxServings)
+            AND (:instructionsContent IS NULL OR inst.content LIKE CONCAT('%', :instructionsContent, '%'))
+        """)
     List<Recipe> findRecipesWithFilters(
             @Param("isVegetarian") Boolean isVegetarian,
             @Param("servings") Integer servings,
             @Param("minServings") Integer minServings,
             @Param("maxServings") Integer maxServings,
-            @Param("includeIngredients") List<String> includeIngredients,
-            @Param("excludeIngredients") List<String> excludeIngredients,
             @Param("instructionsContent") String instructionsContent
     );
 }

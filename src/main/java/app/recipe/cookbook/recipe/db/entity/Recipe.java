@@ -40,6 +40,7 @@ public class Recipe {
     @Size(min = 3, max = 1000)
     private String description;
 
+    // 1 serving size = serves 1 adult
     @Column(nullable = false)
     @NotNull
     @Size(min = 1, max = 50)

@@ -4,6 +4,7 @@ import app.recipe.cookbook.recipe.dto.domain.RecipeDto;
 import app.recipe.cookbook.recipe.dto.request.RecipeSearchCriteria;
 import app.recipe.cookbook.recipe.dto.request.SaveRecipeRequestDto;
 import app.recipe.cookbook.recipe.dto.response.ApiResponse;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -28,9 +29,9 @@ public class RecipeController {
 
     @GetMapping
     public ApiResponse<List<RecipeDto>> getRecipes(
-            @RequestParam(required = false) Integer servings,
-            @RequestParam(required = false) Integer minServings,
-            @RequestParam(required = false) Integer maxServings,
+            @RequestParam(required = false) @Min(1) Integer servings,
+            @RequestParam(required = false) @Min(1) Integer minServings,
+            @RequestParam(required = false) @Min(1) Integer maxServings,
             @RequestParam(required = false) Boolean isVegetarian,
             @RequestParam(required = false) List<String> includeIngredients,
             @RequestParam(required = false) List<String> excludeIngredients,
@@ -39,13 +40,15 @@ public class RecipeController {
     ) {
         final RecipeSearchCriteria searchCriteria = RecipeSearchCriteria.builder()
                 .isVegetarian(isVegetarian)
-                .servings(servings)
-                .minServings(minServings)
-                .maxServings(maxServings)
+                .servingSize(servings)
+                .minServingSize(minServings)
+                .maxServingSize(maxServings)
                 .includeIngredients(includeIngredients)
                 .excludeIngredients(excludeIngredients)
                 .instructionsContent(instructionContent)
                 .build();
+
+        searchCriteria.validate();
 
         final List<RecipeDto> searchResult = recipeService.searchRecipes(searchCriteria);
         return ApiResponse.success(searchResult);
