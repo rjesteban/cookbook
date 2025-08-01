@@ -1,19 +1,22 @@
-package app.recipe.cookbook.recipe.entity;
+package app.recipe.cookbook.recipe.db.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 /**
  * Junction table between recipe and ingredient (many-to-many)
  */
 @Entity
-@Table(name = "recipe_ingredient")
+@Table(name = "recipes_ingredients")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -37,6 +40,15 @@ public class RecipeIngredient {
 
     @Column(length = 50)
     private String unit;
+
+    // Audit trail fields
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
 
     // Relationship
     @ManyToOne(fetch = FetchType.LAZY)

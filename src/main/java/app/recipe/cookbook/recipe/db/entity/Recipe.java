@@ -1,4 +1,4 @@
-package app.recipe.cookbook.recipe.entity;
+package app.recipe.cookbook.recipe.db.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -43,7 +43,7 @@ public class Recipe {
     @Column(nullable = false)
     @NotNull
     @Size(min = 1, max = 50)
-    private Short servings;
+    private Integer servings;
 
     /**
      * This field will be precomputed on save based on ingredients
@@ -65,4 +65,8 @@ public class Recipe {
     @OneToMany(mappedBy = "instructions", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Instruction> instructions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "recipes_ingredients", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<RecipeIngredient> ingredients = new ArrayList<>();
 }

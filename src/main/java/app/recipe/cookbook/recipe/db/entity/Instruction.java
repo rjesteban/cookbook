@@ -1,4 +1,4 @@
-package app.recipe.cookbook.recipe.entity;
+package app.recipe.cookbook.recipe.db.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Min;
@@ -34,7 +34,7 @@ public class Instruction {
     private Short stepNumber;
 
     @NotBlank
-    private String details;
+    private String content;
 
     // Audit trail fields
     @CreationTimestamp

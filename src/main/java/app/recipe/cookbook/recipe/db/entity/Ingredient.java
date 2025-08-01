@@ -1,4 +1,4 @@
-package app.recipe.cookbook.recipe.entity;
+package app.recipe.cookbook.recipe.db.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
