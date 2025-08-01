@@ -1,9 +1,17 @@
 package app.recipe.cookbook.recipe.dto.request;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -11,5 +19,53 @@ import lombok.NoArgsConstructor;
 @Builder
 public class SaveRecipeRequestDto {
 
+    @NotBlank(message = "Recipe title is required")
+    @Size(min = 3, max = 255, message = "Title must be between 3 and 255 characters")
+    private String title;
 
+    @Size(min = 3, max = 1000, message = "Description must be between 3 and 1000 characters")
+    private String description;
+
+    @NotNull(message = "Serving size is required. 1 serving size serves 1 adult")
+    @Positive(message = "Servings size must be a positive number")
+    private Integer servingSize;
+
+    @Valid
+    @Size(min = 1, message = "At least one ingredient is required")
+    private List<IngredientRequestDto> ingredients;
+
+    @Valid
+    @Size(min = 1, message = "At least one instruction is required")
+    private List<InstructionRequestDto> instructions;
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class IngredientRequestDto {
+        @NotBlank(message = "Ingredient name is required")
+        private String name;
+
+        @NotNull(message = "Quantity is required")
+        @Positive(message = "Quantity must be positive")
+        private BigDecimal quantity;
+
+        private String unit;
+
+        @Builder.Default
+        private Boolean isVegetarian = false;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class InstructionRequestDto {
+        @NotNull(message = "Step number is required")
+        @Positive(message = "Step number must be positive")
+        private Short stepNumber;
+
+        @NotBlank(message = "Instruction content is required")
+        private String content;
+    }
 }

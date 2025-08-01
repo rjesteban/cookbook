@@ -2,11 +2,13 @@ package app.recipe.cookbook.recipe.mappers;
 
 import app.recipe.cookbook.recipe.dto.domain.InstructionDto;
 import app.recipe.cookbook.recipe.db.entity.Instruction;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-class InstructionMapper {
+@Component
+public class InstructionMapper {
 
     public List<InstructionDto> toDto(List<Instruction> recipeInstructions) {
         return recipeInstructions

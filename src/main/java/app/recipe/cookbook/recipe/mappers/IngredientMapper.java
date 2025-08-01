@@ -2,11 +2,13 @@ package app.recipe.cookbook.recipe.mappers;
 
 import app.recipe.cookbook.recipe.dto.domain.RecipeIngredientDto;
 import app.recipe.cookbook.recipe.db.entity.RecipeIngredient;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
-class IngredientMapper {
+@Component
+public class IngredientMapper {
 
     public List<RecipeIngredientDto> toDto(List<RecipeIngredient> recipeIngredientEntities) {
         return recipeIngredientEntities
