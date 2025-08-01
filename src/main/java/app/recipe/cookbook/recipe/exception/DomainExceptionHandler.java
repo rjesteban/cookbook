@@ -1,0 +1,43 @@
+package app.recipe.cookbook.recipe.exception;
+
+import app.recipe.cookbook.recipe.dto.response.ApiResponse;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+/**
+ * The default Exception handler for the Cookbook API: provides
+ * consistent error response structure across all endpoints.
+ */
+@RestControllerAdvice
+@Slf4j
+public class DomainExceptionHandler {
+
+    @ExceptionHandler(RecipeNotFoundException.class)
+    public ResponseEntity<ApiResponse<Void>> handleRecipeNotFoundException(RecipeNotFoundException ex) {
+        log.error("Recipe not found: {}", ex.getMessage());
+
+        final ApiResponse<Void> errorResponse = ApiResponse.error(ex.getCode(), ex.getMessage());
+
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+    }
+
+    /**
+     * Handle illegal argument exceptions
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<Void>> handleIllegalArgumentException(IllegalArgumentException ex) {
+        log.error("Illegal argument: {}", ex.getMessage());
+        final ApiResponse<Void> errorResponse = ApiResponse.error(ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Void>> handleGenericException(Exception ex) {
+        log.error("Unexpected error occurred: ", ex);
+        final ApiResponse<Void> errorResponse = ApiResponse.error(ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+}
