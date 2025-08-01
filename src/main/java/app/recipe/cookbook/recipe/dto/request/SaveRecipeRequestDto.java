@@ -50,6 +50,13 @@ public class SaveRecipeRequestDto {
         @Positive(message = "Quantity must be positive")
         private BigDecimal quantity;
 
+        /*
+         * TODO: add validation, have a new table called "measurement_unit".
+         *  Unit should also be dependent on the state (we can't say liters on a solid ingredient).
+         *  With this as well we can have a lookup endpoint for measurements that client code can use
+         *  to manipulate the units as desired (imperial vs metric).
+         *  In the interest of time, I prefer to fall it as further enhancement.
+         */
         private String unit;
 
         @Builder.Default
