@@ -32,7 +32,7 @@ public class InstructionMapper {
 
     public List<Instruction> fromRequestDto(List<SaveRecipeRequestDto.InstructionRequestDto> instructionDtos, UUID recipeId) {
         final List<Instruction> instructions = new ArrayList<>();
-        for (int i = 1; i <= instructionDtos.size(); i++) {
+        for (int i = 0; i < instructionDtos.size(); i++) {
             instructions.add(
                     fromRequestDto(instructionDtos.get(i), recipeId, i + 1)
             );
