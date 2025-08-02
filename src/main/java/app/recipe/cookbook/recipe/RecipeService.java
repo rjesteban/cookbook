@@ -1,12 +1,16 @@
 package app.recipe.cookbook.recipe;
 
 import app.recipe.cookbook.recipe.db.entity.Ingredient;
+import app.recipe.cookbook.recipe.db.entity.Instruction;
+import app.recipe.cookbook.recipe.db.entity.RecipeIngredient;
 import app.recipe.cookbook.recipe.db.repository.IngredientRepository;
 import app.recipe.cookbook.recipe.dto.domain.RecipeDto;
 import app.recipe.cookbook.recipe.db.entity.Recipe;
 import app.recipe.cookbook.recipe.dto.request.RecipeSearchCriteria;
 import app.recipe.cookbook.recipe.dto.request.SaveRecipeRequestDto;
 import app.recipe.cookbook.common.exception.RecipeNotFoundException;
+import app.recipe.cookbook.recipe.mapper.IngredientMapper;
+import app.recipe.cookbook.recipe.mapper.InstructionMapper;
 import app.recipe.cookbook.recipe.mapper.RecipeMapper;
 import app.recipe.cookbook.recipe.db.repository.RecipeRepository;
 import jakarta.transaction.Transactional;
@@ -26,6 +30,8 @@ import java.util.stream.Collectors;
 public class RecipeService {
 
     private final IngredientRepository ingredientRepository;
+    private final IngredientMapper ingredientMapper;
+    private final InstructionMapper instructionMapper;
     private final RecipeRepository recipeRepository;
     private final RecipeMapper recipeMapper;
 
@@ -138,19 +144,50 @@ public class RecipeService {
     public void updateRecipe(UUID id, SaveRecipeRequestDto requestDto) {
         log.info("Updating recipe with ID: {}", id);
 
-        if (!recipeRepository.existsById(id)) {
-            throw new RecipeNotFoundException("Recipe not found with ID: " + id);
-        }
+        // Load the existing recipe
+        Recipe existingRecipe = recipeRepository.findById(id)
+                .orElseThrow(() -> new RecipeNotFoundException("Recipe not found with ID: " + id));
 
         final List<Ingredient> processedIngredients = upsertIngredients(requestDto.getIngredients());
-        final Recipe recipe = recipeMapper.fromUpdateRequestDto(requestDto, id, processedIngredients);
+        
+        // Calculate if recipe is vegetarian based on processed ingredients
+        boolean isVegetarian = processedIngredients.stream()
+                .allMatch(ingredient -> Boolean.TRUE.equals(ingredient.getIsVegetarian()));
 
-        // Update all ingredients and instructions with the correct recipe ID
-        recipe.getIngredients().forEach(ingredient -> ingredient.setRecipeId(id));
-        recipe.getInstructions().forEach(instruction -> instruction.setRecipeId(id));
+        // Update ONLY the basic recipe fields (no child entities)
+        existingRecipe.setTitle(requestDto.getTitle());
+        existingRecipe.setDescription(requestDto.getDescription());
+        existingRecipe.setServings(requestDto.getServingSize());
+        existingRecipe.setIsVegetarian(isVegetarian);
 
-        // Save the updated recipe: cascade will handle ingredients and instructions
-        final Recipe savedRecipe = recipeRepository.save(recipe);
+        // Clear existing collections (triggers orphan removal)
+        existingRecipe.getIngredients().clear();
+        existingRecipe.getInstructions().clear();
+        
+        // Flush to ensure deletions are done before inserts
+        recipeRepository.flush();
+
+        // Create new collections using mappers
+        List<RecipeIngredient> newIngredients = ingredientMapper.fromIngredientsAndDtos(
+                processedIngredients,
+                requestDto.getIngredients(),
+                id
+        );
+        List<Instruction> newInstructions = instructionMapper.fromRequestDto(
+                requestDto.getInstructions(),
+                id
+        );
+
+        // Set up bidirectional relationships
+        newIngredients.forEach(ri -> ri.setRecipe(existingRecipe));
+        newInstructions.forEach(instruction -> instruction.setRecipe(existingRecipe));
+
+        // Add new collections
+        existingRecipe.getIngredients().addAll(newIngredients);
+        existingRecipe.getInstructions().addAll(newInstructions);
+
+        // Save the updated recipe
+        final Recipe savedRecipe = recipeRepository.save(existingRecipe);
 
         log.info("Successfully updated recipe with ID: {}", savedRecipe.getId());
     }
@@ -173,6 +210,7 @@ public class RecipeService {
                 .orElseGet(() -> {
                     log.debug("Creating new ingredient: {}", dto.getName());
                     Ingredient newIngredient = Ingredient.builder()
+                            .id(UUID.randomUUID()) // Manually assign ID
                             .name(dto.getName())
                             .isVegetarian(dto.getIsVegetarian())
                             .build();

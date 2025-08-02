@@ -42,6 +42,7 @@ public class InstructionMapper {
 
     private Instruction fromRequestDto(SaveRecipeRequestDto.InstructionRequestDto dto, UUID recipeId, int stepNumber) {
         return Instruction.builder()
+                .id(UUID.randomUUID()) // Manually assign ID
                 .recipeId(recipeId)
                 .stepNumber(stepNumber)
                 .content(dto.getContent())

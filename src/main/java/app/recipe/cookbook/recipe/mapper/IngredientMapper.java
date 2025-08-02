@@ -31,6 +31,7 @@ public class IngredientMapper {
         return RecipeIngredientDto.builder()
                 .ingredientId(recipeIngredientEntity.getIngredientId())
                 .recipeId(recipeIngredientEntity.getRecipeId())
+                .name(recipeIngredientEntity.getIngredient().getName())
                 .isVegetarian(recipeIngredientEntity.getIngredient().getIsVegetarian())
                 .unit(recipeIngredientEntity.getUnit())
                 .quantity(recipeIngredientEntity.getQuantity())

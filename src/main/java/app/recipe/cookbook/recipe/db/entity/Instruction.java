@@ -20,7 +20,7 @@ public class Instruction {
 
     // Main Fields
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+//    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(name = "recipe_id", nullable = false)

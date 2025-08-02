@@ -1,6 +1,8 @@
 package app.recipe.cookbook.recipe.db.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -28,7 +30,7 @@ public class Recipe {
 
     // Main fields
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+//    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(nullable = false)
@@ -43,7 +45,8 @@ public class Recipe {
     // 1 serving size = serves 1 adult
     @Column(nullable = false)
     @NotNull
-    @Size(min = 1, max = 50)
+    @Min(value = 1, message = "Servings must be at least 1")
+    @Max(value = 50, message = "Servings cannot exceed 50")
     private Integer servings;
 
     /**
