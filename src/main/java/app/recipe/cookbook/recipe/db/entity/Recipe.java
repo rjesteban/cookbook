@@ -63,11 +63,11 @@ public class Recipe {
     private Instant updatedAt;
 
     // Relationship fields
-    @OneToMany(mappedBy = "instructions", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "recipe", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Instruction> instructions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "recipes_ingredients", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "recipe", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<RecipeIngredient> ingredients = new ArrayList<>();
 }

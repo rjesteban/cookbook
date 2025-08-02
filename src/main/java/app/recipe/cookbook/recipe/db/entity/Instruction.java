@@ -30,6 +30,7 @@ public class Instruction {
     @Column(name = "step_number", nullable = false)
     private Integer stepNumber;
 
+    @Column(columnDefinition = "TEXT")
     @NotBlank
     private String content;
 

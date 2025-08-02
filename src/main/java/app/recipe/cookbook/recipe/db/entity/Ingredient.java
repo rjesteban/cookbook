@@ -24,7 +24,7 @@ public class Ingredient {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, unique = true)
     @NotNull
     private String name;
 
@@ -33,7 +33,7 @@ public class Ingredient {
     private Boolean isVegetarian = false;
 
     // Relationship fields
-    @OneToMany(mappedBy = "ingredients", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "ingredient", fetch = FetchType.LAZY)
     @Builder.Default
     private List<RecipeIngredient> recipeIngredients = new ArrayList<>();
 }

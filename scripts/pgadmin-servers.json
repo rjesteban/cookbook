@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "LocalPostgres": {
+      "Name": "CookBookLocal",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "mydatabase",
+      "Username": "myuser",
+      "SSLMode": "prefer"
+    }
+  }
+}

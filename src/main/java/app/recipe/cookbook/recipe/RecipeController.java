@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/recipes")
+@RequestMapping("/v1/recipes")
 @RequiredArgsConstructor
 @Slf4j
 public class RecipeController {
