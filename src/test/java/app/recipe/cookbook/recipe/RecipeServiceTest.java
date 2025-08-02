@@ -6,6 +6,8 @@ import app.recipe.cookbook.recipe.db.repository.IngredientRepository;
 import app.recipe.cookbook.recipe.db.repository.RecipeRepository;
 import app.recipe.cookbook.recipe.dto.domain.RecipeDto;
 import app.recipe.cookbook.recipe.dto.request.SaveRecipeRequestDto;
+import app.recipe.cookbook.recipe.mapper.IngredientMapper;
+import app.recipe.cookbook.recipe.mapper.InstructionMapper;
 import app.recipe.cookbook.recipe.mapper.RecipeMapper;
 import app.recipe.cookbook.common.exception.RecipeNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +36,12 @@ class RecipeServiceTest {
 
     @Mock
     private RecipeRepository recipeRepository;
+
+    @Mock
+    private IngredientMapper ingredientMapper;
+
+    @Mock
+    private InstructionMapper instructionMapper;
 
     @Mock
     private RecipeMapper recipeMapper;
@@ -170,10 +178,17 @@ class RecipeServiceTest {
     void shouldCreateRecipeWithVegetarianIngredients() {
         // Given
         List<Ingredient> processedIngredients = Collections.singletonList(vegetarianIngredient);
+        Recipe recipeWithoutChildren = Recipe.builder()
+                .title("Dummy Recipe Title")
+                .description("Dummy Recipe Description")
+                .servings(4)
+                .isVegetarian(true)
+                .build();
+        
         when(ingredientRepository.findByNameIgnoreCase("tomato"))
                 .thenReturn(Optional.of(vegetarianIngredient));
         when(recipeMapper.fromCreateRequestDto(mockRequestDto, processedIngredients))
-                .thenReturn(mockRecipe);
+                .thenReturn(recipeWithoutChildren);
         when(recipeRepository.save(any(Recipe.class))).thenReturn(mockRecipe);
         when(recipeMapper.toDto(mockRecipe)).thenReturn(mockRecipeDto);
 
@@ -184,7 +199,7 @@ class RecipeServiceTest {
         assertThat(result).isEqualTo(mockRecipeDto);
         verify(ingredientRepository).findByNameIgnoreCase("tomato");
         verify(recipeMapper).fromCreateRequestDto(mockRequestDto, processedIngredients);
-        verify(recipeRepository).save(any(Recipe.class));
+        verify(recipeRepository, times(1)).save(any(Recipe.class)); // Save called once
         verify(recipeMapper).toDto(mockRecipe);
     }
 
@@ -219,11 +234,18 @@ class RecipeServiceTest {
                 .isVegetarian(true)
                 .build();
 
+        Recipe recipeWithoutChildren = Recipe.builder()
+                .title("Dummy Recipe Title")
+                .description("Dummy Recipe Description")
+                .servings(4)
+                .isVegetarian(true)
+                .build();
+
         when(ingredientRepository.findByNameIgnoreCase(newIngredientName))
                 .thenReturn(Optional.empty());
         when(ingredientRepository.save(any(Ingredient.class))).thenReturn(newIngredient);
         when(recipeMapper.fromCreateRequestDto(eq(requestWithNewIngredient), any()))
-                .thenReturn(mockRecipe);
+                .thenReturn(recipeWithoutChildren);
         when(recipeRepository.save(any(Recipe.class))).thenReturn(mockRecipe);
         when(recipeMapper.toDto(mockRecipe)).thenReturn(mockRecipeDto);
 
@@ -244,36 +266,57 @@ class RecipeServiceTest {
     void shouldUpdateRecipeSuccessfully() {
         // Given
         List<Ingredient> processedIngredients = Arrays.asList(vegetarianIngredient);
-        when(recipeRepository.existsById(recipeId)).thenReturn(true);
+        Recipe existingRecipe = Recipe.builder()
+                .id(recipeId)
+                .title("Old Title")
+                .description("Old Description") 
+                .servings(2)
+                .isVegetarian(false)
+                .ingredients(new ArrayList<>())
+                .instructions(new ArrayList<>())
+                .build();
+        
+        when(recipeRepository.findById(recipeId)).thenReturn(Optional.of(existingRecipe));
         when(ingredientRepository.findByNameIgnoreCase("tomato"))
                 .thenReturn(Optional.of(vegetarianIngredient));
-        when(recipeMapper.fromUpdateRequestDto(mockRequestDto, recipeId, processedIngredients))
-                .thenReturn(mockRecipe);
-        when(recipeRepository.save(any(Recipe.class))).thenReturn(mockRecipe);
+        when(ingredientMapper.fromIngredientsAndDtos(any(), any(), any()))
+                .thenReturn(new ArrayList<>());
+        when(instructionMapper.fromRequestDto(any(), any()))
+                .thenReturn(new ArrayList<>());
+        when(recipeRepository.save(any(Recipe.class))).thenReturn(existingRecipe);
 
         // When
         recipeService.updateRecipe(recipeId, mockRequestDto);
 
         // Then
-        verify(recipeRepository).existsById(recipeId);
+        verify(recipeRepository).findById(recipeId);
         verify(ingredientRepository).findByNameIgnoreCase("tomato");
-        verify(recipeMapper).fromUpdateRequestDto(mockRequestDto, recipeId, processedIngredients);
+        verify(recipeRepository).flush(); // Should flush after clearing collections
+        verify(ingredientMapper).fromIngredientsAndDtos(any(), any(), any());
+        verify(instructionMapper).fromRequestDto(any(), any());
         verify(recipeRepository).save(any(Recipe.class));
+        
+        // Verify the recipe fields were updated
+        assertThat(existingRecipe.getTitle()).isEqualTo("Dummy Recipe Title");
+        assertThat(existingRecipe.getDescription()).isEqualTo("Dummy Recipe Description");
+        assertThat(existingRecipe.getServings()).isEqualTo(4);
+        assertThat(existingRecipe.getIsVegetarian()).isTrue();
     }
 
     @Test
     @DisplayName("Should throw exception when updating non-existent recipe")
     void shouldThrowExceptionWhenUpdatingNonExistentRecipe() {
         // Given
-        when(recipeRepository.existsById(recipeId)).thenReturn(false);
+        when(recipeRepository.findById(recipeId)).thenReturn(Optional.empty());
 
         // When & Then
         assertThatThrownBy(() -> recipeService.updateRecipe(recipeId, mockRequestDto))
                 .isInstanceOf(RecipeNotFoundException.class)
                 .hasMessage("Recipe not found with ID: " + recipeId);
         
-        verify(recipeRepository).existsById(recipeId);
-        verifyNoInteractions(ingredientRepository, recipeMapper);
+        verify(recipeRepository).findById(recipeId);
+        verifyNoInteractions(ingredientRepository, ingredientMapper, instructionMapper, recipeMapper);
         verify(recipeRepository, never()).save(any());
+        verify(recipeRepository, never()).flush();
     }
 }
