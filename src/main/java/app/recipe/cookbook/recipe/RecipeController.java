@@ -3,7 +3,7 @@ package app.recipe.cookbook.recipe;
 import app.recipe.cookbook.recipe.dto.domain.RecipeDto;
 import app.recipe.cookbook.recipe.dto.request.RecipeSearchCriteria;
 import app.recipe.cookbook.recipe.dto.request.SaveRecipeRequestDto;
-import app.recipe.cookbook.recipe.dto.response.ApiResponse;
+import app.recipe.cookbook.recipe.dto.response.ProjectApiResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
@@ -24,13 +24,13 @@ public class RecipeController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<RecipeDto> createRecipe(@Valid @RequestBody SaveRecipeRequestDto saveRecipeRequestDto) {
+    public ProjectApiResponse<RecipeDto> createRecipe(@Valid @RequestBody SaveRecipeRequestDto saveRecipeRequestDto) {
         final RecipeDto createdRecipe = recipeService.createRecipe(saveRecipeRequestDto);
-        return ApiResponse.success(createdRecipe);
+        return ProjectApiResponse.success(createdRecipe);
     }
 
     @GetMapping
-    public ApiResponse<List<RecipeDto>> getRecipes(
+    public ProjectApiResponse<List<RecipeDto>> getRecipes(
             @RequestParam(required = false) @Min(1) Integer servings,
             @RequestParam(required = false) @Min(1) Integer minServings,
             @RequestParam(required = false) @Min(1) Integer maxServings,
@@ -53,14 +53,14 @@ public class RecipeController {
         searchCriteria.validate();
 
         final List<RecipeDto> searchResult = recipeService.searchRecipes(searchCriteria);
-        return ApiResponse.success(searchResult);
+        return ProjectApiResponse.success(searchResult);
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<RecipeDto> getRecipeById(@PathVariable UUID id) {
+    public ProjectApiResponse<RecipeDto> getRecipeById(@PathVariable UUID id) {
         log.info("Fetching recipe with ID: {}", id);
         final RecipeDto recipe = recipeService.getRecipeById(id);
-        return ApiResponse.success(recipe);
+        return ProjectApiResponse.success(recipe);
     }
 
     @PutMapping("/{id}")

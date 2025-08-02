@@ -1,6 +1,6 @@
 package app.recipe.cookbook.recipe.exception;
 
-import app.recipe.cookbook.recipe.dto.response.ApiResponse;
+import app.recipe.cookbook.recipe.dto.response.ProjectApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class DomainExceptionHandler {
 
     @ExceptionHandler(RecipeNotFoundException.class)
-    public ResponseEntity<ApiResponse<Void>> handleRecipeNotFoundException(RecipeNotFoundException ex) {
+    public ResponseEntity<ProjectApiResponse<Void>> handleRecipeNotFoundException(RecipeNotFoundException ex) {
         log.error("Recipe not found: {}", ex.getMessage());
 
-        final ApiResponse<Void> errorResponse = ApiResponse.error(ex.getCode(), ex.getMessage());
+        final ProjectApiResponse<Void> errorResponse = ProjectApiResponse.error(ex.getCode(), ex.getMessage());
 
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
@@ -28,16 +28,16 @@ public class DomainExceptionHandler {
      * Handle illegal argument exceptions
      */
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<Void>> handleIllegalArgumentException(IllegalArgumentException ex) {
+    public ResponseEntity<ProjectApiResponse<Void>> handleIllegalArgumentException(IllegalArgumentException ex) {
         log.error("Illegal argument: {}", ex.getMessage());
-        final ApiResponse<Void> errorResponse = ApiResponse.error(ex.getMessage());
+        final ProjectApiResponse<Void> errorResponse = ProjectApiResponse.error(ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Void>> handleGenericException(Exception ex) {
+    public ResponseEntity<ProjectApiResponse<Void>> handleGenericException(Exception ex) {
         log.error("Unexpected error occurred: ", ex);
-        final ApiResponse<Void> errorResponse = ApiResponse.error(ex.getMessage());
+        final ProjectApiResponse<Void> errorResponse = ProjectApiResponse.error(ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }
