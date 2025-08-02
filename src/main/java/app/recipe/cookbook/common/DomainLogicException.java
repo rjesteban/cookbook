@@ -1,4 +1,4 @@
-package app.recipe.cookbook.recipe.exception;
+package app.recipe.cookbook.common;
 
 public abstract class DomainLogicException extends RuntimeException {
 

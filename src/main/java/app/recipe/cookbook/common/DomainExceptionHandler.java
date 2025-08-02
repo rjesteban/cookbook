@@ -1,6 +1,7 @@
-package app.recipe.cookbook.recipe.exception;
+package app.recipe.cookbook.common;
 
-import app.recipe.cookbook.recipe.dto.response.ProjectApiResponse;
+import app.recipe.cookbook.common.dto.response.ProjectApiResponse;
+import app.recipe.cookbook.common.exception.RecipeNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

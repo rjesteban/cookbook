@@ -1,4 +1,6 @@
-package app.recipe.cookbook.recipe.exception;
+package app.recipe.cookbook.common.exception;
+
+import app.recipe.cookbook.common.DomainLogicException;
 
 public class RecipeNotFoundException extends DomainLogicException {
 
