@@ -1,4 +1,4 @@
-package app.recipe.cookbook.recipe.mappers;
+package app.recipe.cookbook.recipe.mapper;
 
 import app.recipe.cookbook.recipe.db.entity.Ingredient;
 import app.recipe.cookbook.recipe.dto.domain.RecipeIngredientDto;

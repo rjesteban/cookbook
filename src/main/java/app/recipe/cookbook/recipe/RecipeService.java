@@ -7,7 +7,7 @@ import app.recipe.cookbook.recipe.db.entity.Recipe;
 import app.recipe.cookbook.recipe.dto.request.RecipeSearchCriteria;
 import app.recipe.cookbook.recipe.dto.request.SaveRecipeRequestDto;
 import app.recipe.cookbook.recipe.exception.RecipeNotFoundException;
-import app.recipe.cookbook.recipe.mappers.RecipeMapper;
+import app.recipe.cookbook.recipe.mapper.RecipeMapper;
 import app.recipe.cookbook.recipe.db.repository.RecipeRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
